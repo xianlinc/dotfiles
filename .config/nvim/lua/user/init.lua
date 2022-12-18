@@ -1,11 +1,10 @@
 --              AstroNvim Configuration Table
+--
 -- All configuration changes should go inside of the table below
-
 -- You can think of a Lua "table" as a dictionary like data structure the
 -- normal format is "key = value". These also handle array like data structures
 -- where a value with no key simply has an implicit numeric key
 local config = {
-
   -- Configure AstroNvim updates
   updater = {
     remote = "origin", -- remote to use
@@ -27,7 +26,6 @@ local config = {
 
   -- Set colorscheme to use
   colorscheme = "onedark",
-
   -- Add highlight groups in any theme
   highlights = {
     -- init = { -- this table overrides highlights in all themes
@@ -37,7 +35,7 @@ local config = {
     --   Normal = { bg = "#000000" },
     -- },
   },
-
+  -- packer
   -- set vim options here (vim.<first_key>.<second_key> =  value)
   options = {
     opt = {
@@ -56,6 +54,8 @@ local config = {
       diagnostics_enabled = true, -- enable diagnostics at start
       status_diagnostics_enabled = true, -- enable diagnostics in statusline
       icons_enabled = true, -- disable icons in the UI (disable if no nerd font is available, requires :PackerSync after changing)
+      copilot_no_tab_map = true,
+      copilot_assume_mapped = true,
     },
   },
   -- If you need more control, you can use the function()...end notation
@@ -151,7 +151,8 @@ local config = {
         },
       },
       disabled = { -- disable formatting capabilities for the listed language servers
-        -- "sumneko_lua",
+        "sumneko_lua",
+        "copilot",
       },
       timeout_ms = 1000, -- default format timeout
       -- filter = function(client) -- fully override the default formatting function
@@ -162,6 +163,14 @@ local config = {
     mappings = {
       n = {
         -- ["<leader>lf"] = false -- disable formatting keymap
+      },
+      i = {
+        -- map C-\ to get new suggestion from copilot
+        ["<C-\\>"] = { "<Plug>(copilot-suggest)", desc = "copilot suggest" },
+        -- map C-> to get next suggestion from copilot
+        ["<C-p>"] = { "<Plug>(copilot-next)", desc = "copilot next" },
+        -- map C-< to get prev suggestion from copilot
+        ["<C-u>"] = { "<Plug>(copilot-previous)", desc = "copilot previous" },
       },
     },
     -- add to the global LSP on_attach function
@@ -246,24 +255,46 @@ local config = {
     -- All other entries override the require("<key>").setup({...}) call for default plugins
     ["null-ls"] = function(config) -- overrides `require("null-ls").setup(config)`
       -- config variable is the default configuration table for the setup function call
-      -- local null_ls = require "null-ls"
+      local null_ls = require "null-ls"
 
       -- Check supported formatters and linters
       -- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/formatting
       -- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/diagnostics
       config.sources = {
         -- Set a formatter
-        -- null_ls.builtins.formatting.stylua,
-        -- null_ls.builtins.formatting.prettier,
+        null_ls.builtins.formatting.stylua,
+        null_ls.builtins.formatting.prettier,
       }
       return config -- return final config table
     end,
     treesitter = { -- overrides `require("treesitter").setup(...)`
-      ensure_installed = { "go","lua", "typescript", "javascript", "python", "prisma", "markdown"},
+      ensure_installed = {
+        "help",
+        "go",
+        "lua",
+        "typescript",
+        "javascript",
+        "python",
+        "prisma",
+        "markdown",
+        "json",
+        "tsx",
+        "vim",
+        "html",
+      },
     },
     -- use mason-lspconfig to configure LSP installations
     ["mason-lspconfig"] = { -- overrides `require("mason-lspconfig").setup(...)`
-      ensure_installed = { "sumneko_lua", "eslint","gopls","tsserver","tailwindcss","pyright","prismals","sqls"},
+      ensure_installed = {
+        "sumneko_lua",
+        "eslint",
+        "gopls",
+        "tsserver",
+        "tailwindcss",
+        "pyright",
+        "prismals",
+        "sqls",
+      },
     },
     -- use mason-null-ls to configure Formatters/Linter installation for null-ls sources
     ["mason-null-ls"] = { -- overrides `require("mason-null-ls").setup(...)`
@@ -328,11 +359,13 @@ local config = {
     --     ["~/%.config/foo/.*"] = "fooscript",
     --   },
     -- }
+    require("onedark").setup {
+      style = "darker",
+    }
+    require("onedark").load()
+    -- copilot keymap set here because it has a weird 80kd problem
+    vim.keymap.set("i", "<C-y>", "copilot#Accept(<Tab>)", { silent = true, expr = true, script = true })
   end,
 }
-require("onedark").setup {
-  style = "darker",
-}
-require("onedark").load()
 
 return config
